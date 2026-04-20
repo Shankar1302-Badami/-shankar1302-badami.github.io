@@ -1,0 +1,1425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shankrappa S B - VLSI Design Verification Engineer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --deep-indigo: #1a0b3d;
+            --hot-pink: #ff0080;
+            --cyan: #00d9ff;
+            --amber: #ffa500;
+            --dark-bg: #0f0620;
+            --card-bg: rgba(26, 11, 61, 0.4);
+            --glass-bg: rgba(26, 11, 61, 0.6);
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0b0;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--dark-bg);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--deep-indigo);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--hot-pink);
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--cyan);
+        }
+
+        /* Noise Texture */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                url('data:image/svg+xml;<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" /></filter><rect width="100" height="100" fill="rgba(255,255,255,0.02)" filter="url(%23noise)"/></svg>');
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Particle Canvas Background */
+        #particleCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        /* Custom Cursor */
+        html {
+            cursor: none;
+        }
+
+        .cursor {
+            position: fixed;
+            width: 8px;
+            height: 8px;
+            background: var(--hot-pink);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            box-shadow: 0 0 10px var(--hot-pink);
+        }
+
+        .cursor-ring {
+            position: fixed;
+            width: 30px;
+            height: 30px;
+            border: 2px solid var(--cyan);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9998;
+            box-shadow: 0 0 15px var(--cyan);
+        }
+
+        /* Loading Screen */
+        .loader-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--dark-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            z-index: 10000;
+            opacity: 1;
+            transition: opacity 2.5s ease-out;
+        }
+
+        .loader-container.fade-out {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loader-initials {
+            font-family: 'Syne', sans-serif;
+            font-size: 80px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--hot-pink), var(--cyan), var(--amber));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: shimmer 2s ease-in-out infinite;
+            margin-bottom: 30px;
+            letter-spacing: 3px;
+        }
+
+        .progress-bar-container {
+            width: 300px;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--hot-pink), var(--cyan), var(--amber));
+            width: 0%;
+            animation: progress 2s ease-in-out forwards;
+            border-radius: 10px;
+            box-shadow: 0 0 20px var(--hot-pink);
+        }
+
+        @keyframes progress {
+            0% { width: 0%; }
+            100% { width: 100%; }
+        }
+
+        @keyframes shimmer {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        /* Navigation Bar */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 0, 128, 0.2);
+            padding: 20px 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            animation: slideDown 0.8s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .logo {
+            font-family: 'Syne', sans-serif;
+            font-size: 24px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--hot-pink), var(--cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        nav ul {
+            display: flex;
+            gap: 40px;
+            list-style: none;
+        }
+
+        nav a {
+            color: var(--text-primary);
+            text-decoration: none;
+            font-weight: 500;
+            position: relative;
+            transition: color 0.3s;
+        }
+
+        nav a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--hot-pink), var(--cyan));
+            transition: width 0.3s ease;
+        }
+
+        nav a:hover::after {
+            width: 100%;
+        }
+
+        /* Main Content */
+        main {
+            position: relative;
+            z-index: 2;
+            padding-top: 100px;
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            align-items: center;
+            gap: 60px;
+            padding: 80px 50px;
+            animation: fadeUp 1s ease-out 0.3s both;
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hero-left h1 {
+            font-family: 'Syne', sans-serif;
+            font-size: 72px;
+            font-weight: 700;
+            line-height: 1.1;
+            margin: 20px 0;
+            background: linear-gradient(135deg, var(--cyan), var(--hot-pink), var(--amber), var(--cyan));
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: shimmerText 3s ease-in-out infinite;
+        }
+
+        @keyframes shimmerText {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .availability-tag {
+            display: inline-block;
+            background: rgba(0, 217, 255, 0.1);
+            border: 1px solid var(--cyan);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            color: var(--cyan);
+            margin-bottom: 20px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        .hero-subtitle {
+            font-size: 24px;
+            color: var(--text-secondary);
+            margin-bottom: 30px;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 14px 30px;
+            border: none;
+            border-radius: 8px;
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 16px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--hot-pink), var(--cyan));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(255, 0, 128, 0.4);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 2px solid var(--cyan);
+            color: var(--cyan);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(0, 217, 255, 0.1);
+            transform: translateY(-3px);
+        }
+
+        .hero-right {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            perspective: 1000px;
+        }
+
+        .avatar-card {
+            position: relative;
+            width: 300px;
+            height: 400px;
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 0, 128, 0.3);
+            border-radius: 20px;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+            animation: float 3s ease-in-out infinite;
+            transform-style: preserve-3d;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotateY(5deg) rotateX(-5deg); }
+            50% { transform: translateY(-20px) rotateY(-5deg) rotateX(5deg); }
+        }
+
+        .avatar-ring {
+            position: absolute;
+            width: 320px;
+            height: 320px;
+            border: 2px dashed var(--hot-pink);
+            border-radius: 50%;
+            animation: spin 20s linear infinite;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        @keyframes spin {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        .avatar-glow {
+            position: absolute;
+            width: 350px;
+            height: 350px;
+            background: radial-gradient(circle, rgba(255, 0, 128, 0.2), transparent);
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .avatar-initials {
+            font-family: 'Syne', sans-serif;
+            font-size: 64px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--hot-pink), var(--cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            z-index: 2;
+            text-align: center;
+        }
+
+        .avatar-role {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-top: 15px;
+            z-index: 2;
+            text-align: center;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            width: 100%;
+            margin-top: 20px;
+            z-index: 2;
+        }
+
+        .stat {
+            text-align: center;
+            padding: 10px;
+            background: rgba(0, 217, 255, 0.05);
+            border-radius: 8px;
+            border: 1px solid rgba(0, 217, 255, 0.2);
+        }
+
+        .stat-number {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--cyan);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 5px;
+        }
+
+        /* Section Styling */
+        section {
+            padding: 100px 50px;
+            position: relative;
+            z-index: 2;
+        }
+
+        section h2 {
+            font-family: 'Syne', sans-serif;
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 60px;
+            background: linear-gradient(135deg, var(--hot-pink), var(--cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Skills Section */
+        .skills-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 30px;
+            margin-bottom: 60px;
+        }
+
+        .skill-item {
+            opacity: 0;
+            animation: slideLeft 0.6s ease-out forwards;
+        }
+
+        .skill-item:nth-child(1) { animation-delay: 0.1s; }
+        .skill-item:nth-child(2) { animation-delay: 0.2s; }
+        .skill-item:nth-child(3) { animation-delay: 0.3s; }
+        .skill-item:nth-child(4) { animation-delay: 0.4s; }
+        .skill-item:nth-child(5) { animation-delay: 0.5s; }
+        .skill-item:nth-child(6) { animation-delay: 0.6s; }
+
+        @keyframes slideLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .skill-name {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .skill-name label {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .skill-percent {
+            color: var(--cyan);
+            font-weight: 600;
+        }
+
+        .skill-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid rgba(0, 217, 255, 0.2);
+        }
+
+        .skill-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--hot-pink), var(--cyan));
+            border-radius: 10px;
+            width: 0%;
+            transition: width 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .skill-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shimmerBar 2s infinite;
+        }
+
+        @keyframes shimmerBar {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        /* Tech Chip Cloud */
+        .tech-cloud {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 60px;
+        }
+
+        .tech-chip {
+            background: var(--card-bg);
+            border: 1px solid rgba(0, 217, 255, 0.3);
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 14px;
+            color: var(--cyan);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .tech-chip:hover {
+            background: rgba(0, 217, 255, 0.1);
+            transform: translateY(-10px);
+            box-shadow: 0 10px 25px rgba(0, 217, 255, 0.3);
+        }
+
+        /* Experience Section */
+        .timeline {
+            position: relative;
+            padding-left: 40px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(180deg, var(--hot-pink), var(--cyan), var(--amber));
+        }
+
+        .timeline-item {
+            margin-bottom: 40px;
+            opacity: 0;
+            animation: slideRight 0.6s ease-out forwards;
+        }
+
+        .timeline-item:nth-child(1) { animation-delay: 0.1s; }
+        .timeline-item:nth-child(2) { animation-delay: 0.2s; }
+        .timeline-item:nth-child(3) { animation-delay: 0.3s; }
+
+        @keyframes slideRight {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .timeline-item-card {
+            background: var(--card-bg);
+            border-left: 3px solid var(--hot-pink);
+            padding: 25px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .timeline-item-card:hover {
+            transform: translateX(20px);
+            border-left-color: var(--cyan);
+            box-shadow: 0 15px 40px rgba(255, 0, 128, 0.2);
+        }
+
+        .timeline-item-date {
+            font-size: 14px;
+            color: var(--amber);
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .timeline-item-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 5px;
+        }
+
+        .timeline-item-company {
+            font-size: 16px;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+
+        .timeline-item-desc {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+
+        .badge-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .badge {
+            background: rgba(0, 217, 255, 0.15);
+            border: 1px solid var(--cyan);
+            color: var(--cyan);
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* Projects Section */
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+        }
+
+        .project-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(0, 217, 255, 0.2);
+            border-radius: 15px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            opacity: 0;
+            animation: fadeUp 0.6s ease-out forwards;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .project-card:nth-child(1) { animation-delay: 0.1s; }
+        .project-card:nth-child(2) { animation-delay: 0.2s; }
+        .project-card:nth-child(3) { animation-delay: 0.3s; }
+
+        .project-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--hot-pink), var(--cyan), var(--amber));
+            transition: left 0.6s ease;
+        }
+
+        .project-card:hover::before {
+            left: 100%;
+        }
+
+        .project-card:hover {
+            transform: translateY(-15px);
+            border-color: var(--cyan);
+            box-shadow: 0 20px 50px rgba(0, 217, 255, 0.2);
+        }
+
+        .project-emoji {
+            font-size: 40px;
+            margin-bottom: 15px;
+        }
+
+        .project-name {
+            font-family: 'Syne', sans-serif;
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+        }
+
+        .project-desc {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .project-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .tag {
+            background: rgba(255, 165, 0, 0.1);
+            border: 1px solid var(--amber);
+            color: var(--amber);
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* Education Section */
+        .education-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+        }
+
+        .education-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 165, 0, 0.3);
+            border-radius: 15px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            opacity: 0;
+            animation: fadeUp 0.6s ease-out forwards;
+        }
+
+        .education-card:nth-child(1) { animation-delay: 0.1s; }
+        .education-card:nth-child(2) { animation-delay: 0.2s; }
+
+        .education-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--amber);
+            box-shadow: 0 15px 40px rgba(255, 165, 0, 0.2);
+        }
+
+        .education-degree {
+            font-family: 'Syne', sans-serif;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+        }
+
+        .education-institution {
+            font-size: 16px;
+            color: var(--amber);
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .education-duration {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 15px;
+        }
+
+        .education-university {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        /* Contact Section */
+        .contact-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+        }
+
+        .contact-left {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .contact-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(0, 217, 255, 0.2);
+            padding: 25px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            opacity: 0;
+            animation: slideLeft 0.6s ease-out forwards;
+        }
+
+        .contact-card:nth-child(1) { animation-delay: 0.1s; }
+        .contact-card:nth-child(2) { animation-delay: 0.2s; }
+        .contact-card:nth-child(3) { animation-delay: 0.3s; }
+        .contact-card:nth-child(4) { animation-delay: 0.4s; }
+
+        .contact-card:hover {
+            transform: translateX(15px);
+            border-color: var(--hot-pink);
+            box-shadow: 0 10px 30px rgba(255, 0, 128, 0.2);
+        }
+
+        .contact-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .contact-value {
+            font-size: 16px;
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .contact-right {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .contact-avatar {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .contact-avatar-initials {
+            font-family: 'Syne', sans-serif;
+            font-size: 80px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--hot-pink), var(--cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            z-index: 2;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .ripple {
+            position: absolute;
+            border: 2px solid var(--cyan);
+            border-radius: 50%;
+            animation: rippleAnimation 1.5s ease-out infinite;
+        }
+
+        .ripple:nth-child(1) {
+            animation-delay: 0s;
+            width: 220px;
+            height: 220px;
+        }
+
+        .ripple:nth-child(2) {
+            animation-delay: 0.3s;
+            width: 220px;
+            height: 220px;
+        }
+
+        .ripple:nth-child(3) {
+            animation-delay: 0.6s;
+            width: 220px;
+            height: 220px;
+        }
+
+        @keyframes rippleAnimation {
+            0% {
+                opacity: 1;
+                transform: scale(0.8);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(1.5);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            nav {
+                padding: 15px 20px;
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            nav ul {
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+
+            .hero {
+                grid-template-columns: 1fr;
+                padding: 60px 20px;
+                gap: 40px;
+            }
+
+            .hero-left h1 {
+                font-size: 48px;
+            }
+
+            section {
+                padding: 60px 20px;
+            }
+
+            section h2 {
+                font-size: 36px;
+            }
+
+            .projects-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .education-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .contact-container {
+                grid-template-columns: 1fr;
+                gap: 40px;
+            }
+
+            .hero-right {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="particleCanvas"></canvas>
+
+    <div class="loader-container">
+        <div class="loader-initials">SSB</div>
+        <div class="progress-bar-container">
+            <div class="progress-bar"></div>
+        </div>
+    </div>
+
+    <div class="cursor"></div>
+    <div class="cursor-ring"></div>
+
+    <nav>
+        <div class="logo">Shankrappa</div>
+        <ul>
+            <li><a href="#home" class="nav-link">Home</a></li>
+            <li><a href="#skills" class="nav-link">Skills</a></li>
+            <li><a href="#experience" class="nav-link">Experience</a></li>
+            <li><a href="#projects" class="nav-link">Projects</a></li>
+            <li><a href="#education" class="nav-link">Education</a></li>
+            <li><a href="#contact" class="nav-link">Contact</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <!-- Hero Section -->
+        <section class="hero" id="home">
+            <div class="hero-left">
+                <div class="availability-tag">✓ Open to Opportunities</div>
+                <h1>Shankrappa S B</h1>
+                <p class="hero-subtitle">VLSI Design Verification Engineer</p>
+                <div class="cta-buttons">
+                    <button class="btn btn-primary">Download Resume</button>
+                    <button class="btn btn-secondary">Get in Touch</button>
+                </div>
+            </div>
+            <div class="hero-right">
+                <div class="avatar-glow"></div>
+                <div class="avatar-ring"></div>
+                <div class="avatar-card">
+                    <div class="avatar-initials">SSB</div>
+                    <div class="avatar-role">Verification Engineer</div>
+                    <div class="stats">
+                        <div class="stat">
+                            <div class="stat-number">3</div>
+                            <div class="stat-label">Major Projects</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-number">85%</div>
+                            <div class="stat-label">Max Coverage</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-number">5+</div>
+                            <div class="stat-label">Protocols</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-number">8</div>
+                            <div class="stat-label">Core Skills</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Skills Section -->
+        <section class="skills-section" id="skills">
+            <h2>Technical Skills</h2>
+            <div class="skills-grid">
+                <div class="skill-item">
+                    <div class="skill-name">
+                        <label>SystemVerilog & UVM</label>
+                        <span class="skill-percent">95%</span>
+                    </div>
+                    <div class="skill-bar">
+                        <div class="skill-fill" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div class="skill-item">
+                    <div class="skill-name">
+                        <label>Verilog & VHDL</label>
+                        <span class="skill-percent">85%</span>
+                    </div>
+                    <div class="skill-bar">
+                        <div class="skill-fill" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div class="skill-item">
+                    <div class="skill-name">
+                        <label>AMBA Protocols (AXI/APB/AHB)</label>
+                        <span class="skill-percent">80%</span>
+                    </div>
+                    <div class="skill-bar">
+                        <div class="skill-fill" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div class="skill-item">
+                    <div class="skill-name">
+                        <label>Constrained Random Verification</label>
+                        <span class="skill-percent">85%</span>
+                    </div>
+                    <div class="skill-bar">
+                        <div class="skill-fill" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div class="skill-item">
+                    <div class="skill-name">
+                        <label>SVA & Assertions</label>
+                        <span class="skill-percent">80%</span>
+                    </div>
+                    <div class="skill-bar">
+                        <div class="skill-fill" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div class="skill-item">
+                    <div class="skill-name">
+                        <label>Python & C/C++</label>
+                        <span class="skill-percent">75%</span>
+                    </div>
+                    <div class="skill-bar">
+                        <div class="skill-fill" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tech-cloud">
+                <div class="tech-chip">Verilog</div>
+                <div class="tech-chip">SystemVerilog</div>
+                <div class="tech-chip">VHDL</div>
+                <div class="tech-chip">UVM</div>
+                <div class="tech-chip">C/C++</div>
+                <div class="tech-chip">Python</div>
+                <div class="tech-chip">AXI4</div>
+                <div class="tech-chip">APB</div>
+                <div class="tech-chip">AHB</div>
+                <div class="tech-chip">SVA</div>
+                <div class="tech-chip">VCS</div>
+                <div class="tech-chip">QuestaSim</div>
+                <div class="tech-chip">ModelSim</div>
+                <div class="tech-chip">Verdi</div>
+                <div class="tech-chip">EDA Playground</div>
+            </div>
+        </section>
+
+        <!-- Experience Section -->
+        <section class="experience-section" id="experience">
+            <h2>Professional Experience</h2>
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-item-card">
+                        <div class="timeline-item-date">2023 - Present</div>
+                        <div class="timeline-item-title">VLSI Training Program</div>
+                        <div class="timeline-item-company">VLSIGuru, Bangalore</div>
+                        <div class="timeline-item-desc">
+                            Professional training in VLSI Design and Verification. Built UVM-based verification environments for memory and AMBA protocol IPs with hands-on experience in constrained-random stimulus, functional coverage, regression testing, and SVA.
+                        </div>
+                        <div class="badge-chips">
+                            <span class="badge">UVM</span>
+                            <span class="badge">SystemVerilog</span>
+                            <span class="badge">AMBA</span>
+                            <span class="badge">Verification</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-item-card">
+                        <div class="timeline-item-date">2021 - 2025</div>
+                        <div class="timeline-item-title">B.E. in Electronics & Communication</div>
+                        <div class="timeline-item-company">Government Engineering College, Raichur</div>
+                        <div class="timeline-item-desc">
+                            Bachelor's degree with specialization in VLSI design, digital electronics, and hardware architecture. Completed multiple projects in verification and RTL design.
+                        </div>
+                        <div class="badge-chips">
+                            <span class="badge">VLSI</span>
+                            <span class="badge">Digital Design</span>
+                            <span class="badge">Research</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-item-card">
+                        <div class="timeline-item-date">2019 - 2021</div>
+                        <div class="timeline-item-title">Pre-University Course</div>
+                        <div class="timeline-item-company">Basaveshwar Science College, Bagalkot</div>
+                        <div class="timeline-item-desc">
+                            Foundation in Physics, Chemistry, and Mathematics with strong fundamentals in problem-solving and technical concepts essential for engineering.
+                        </div>
+                        <div class="badge-chips">
+                            <span class="badge">Physics</span>
+                            <span class="badge">Mathematics</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Projects Section -->
+        <section class="projects-section" id="projects">
+            <h2>Featured Projects</h2>
+            <div class="projects-grid">
+                <div class="project-card">
+                    <div class="project-emoji">💾</div>
+                    <div class="project-name">SRAM Controller Verification</div>
+                    <div class="project-desc">
+                        Designed parameterized SRAM controller with front-door and back-door access. Developed complete UVM testbench with sequences, driver, monitor, and scoreboard. Implemented golden model for data integrity verification.
+                    </div>
+                    <div class="project-tags">
+                        <span class="tag">UVM</span>
+                        <span class="tag">SystemVerilog</span>
+                        <span class="tag">85% Coverage</span>
+                    </div>
+                </div>
+                <div class="project-card">
+                    <div class="project-emoji">🔄</div>
+                    <div class="project-name">Asynchronous FIFO Design</div>
+                    <div class="project-desc">
+                        Implemented parameterized async FIFO with Gray-code pointer synchronization. Verified full, empty, overflow, and underflow scenarios across clock domains. Validated CDC behavior with CRV tests.
+                    </div>
+                    <div class="project-tags">
+                        <span class="tag">CDC</span>
+                        <span class="tag">CRV</span>
+                        <span class="tag">80% Coverage</span>
+                    </div>
+                </div>
+                <div class="project-card">
+                    <div class="project-emoji">🔌</div>
+                    <div class="project-name">AXI4 Master UVC</div>
+                    <div class="project-desc">
+                        Developed AXI4 Master UVC supporting burst types, sizes, locks, and protection attributes. Generated constrained-random traffic. Implemented SVA for protocol compliance verification.
+                    </div>
+                    <div class="project-tags">
+                        <span class="tag">AMBA</span>
+                        <span class="tag">SVA</span>
+                        <span class="tag">70% Coverage</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Education Section -->
+        <section class="education-section" id="education">
+            <h2>Education</h2>
+            <div class="education-grid">
+                <div class="education-card">
+                    <div class="education-degree">B.E. Electronics & Communication</div>
+                    <div class="education-institution">Government Engineering College, Raichur</div>
+                    <div class="education-duration">2021 - 2025</div>
+                    <div class="education-university">Visvesvaraya Technological University (VTU)</div>
+                </div>
+                <div class="education-card">
+                    <div class="education-degree">Pre-University Course (PUC)</div>
+                    <div class="education-institution">Basaveshwar Science College, Bagalkot</div>
+                    <div class="education-duration">2019 - 2021</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section class="contact-section" id="contact">
+            <h2>Get In Touch</h2>
+            <div class="contact-container">
+                <div class="contact-left">
+                    <div class="contact-card">
+                        <div class="contact-label">📧 Email</div>
+                        <div class="contact-value">sbs660513@gmail.com</div>
+                    </div>
+                    <div class="contact-card">
+                        <div class="contact-label">📱 Phone</div>
+                        <div class="contact-value">+91 74832 22380</div>
+                    </div>
+                    <div class="contact-card">
+                        <div class="contact-label">📍 Location</div>
+                        <div class="contact-value">Karnataka, India</div>
+                    </div>
+                    <div class="contact-card">
+                        <div class="contact-label">💼 Availability</div>
+                        <div class="contact-value">Full-time & Contract</div>
+                    </div>
+                </div>
+                <div class="contact-right">
+                    <div class="contact-avatar">
+                        <div class="ripple"></div>
+                        <div class="ripple"></div>
+                        <div class="ripple"></div>
+                        <div class="contact-avatar-initials">SSB</div>
+                    </div>
+                    <p style="text-align: center; color: var(--text-secondary); font-size: 14px;">
+                        "Let's build something amazing together"
+                    </p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // ===== Particle Canvas Animation =====
+        const canvas = document.getElementById('particleCanvas');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const particles = [];
+        const particleCount = 50;
+        const colors = ['#ff0080', '#00d9ff', '#ffa500', '#00ff88'];
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.vx = (Math.random() - 0.5) * 0.5;
+                this.vy = (Math.random() - 0.5) * 0.5;
+                this.color = colors[Math.floor(Math.random() * colors.length)];
+                this.size = Math.random() * 2 + 1;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+
+                if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+                if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+
+                this.x = Math.max(0, Math.min(canvas.width, this.x));
+                this.y = Math.max(0, Math.min(canvas.height, this.y));
+            }
+
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function initParticles() {
+            particles.length = 0;
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        function drawConnections() {
+            for (let i = 0; i < particles.length; i++) {
+                for (let j = i + 1; j < particles.length; j++) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+
+                    if (distance < 150) {
+                        ctx.strokeStyle = `rgba(255, 0, 128, ${0.3 * (1 - distance / 150)})`;
+                        ctx.lineWidth = 1;
+                        ctx.beginPath();
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.stroke();
+                    }
+                }
+            }
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+
+            drawConnections();
+            requestAnimationFrame(animate);
+        }
+
+        initParticles();
+        animate();
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            initParticles();
+        });
+
+        // ===== Custom Cursor =====
+        const cursor = document.querySelector('.cursor');
+        const cursorRing = document.querySelector('.cursor-ring');
+
+        document.addEventListener('mousemove', (e) => {
+            cursor.style.left = e.clientX - 4 + 'px';
+            cursor.style.top = e.clientY - 4 + 'px';
+            cursorRing.style.left = e.clientX - 15 + 'px';
+            cursorRing.style.top = e.clientY - 15 + 'px';
+        });
+
+        // ===== Loading Screen =====
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                document.querySelector('.loader-container').classList.add('fade-out');
+            }, 2000);
+        });
+
+        // ===== Smooth Scroll =====
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+
+        // ===== Skill Bars Animation =====
+        const skillFills = document.querySelectorAll('.skill-fill');
+        const skillValues = [95, 85, 80, 85, 80, 75];
+
+        const skillObserver = new IntersectionObserver((entries) => {
+            entries.forEach((entry, index) => {
+                if (entry.isIntersecting) {
+                    const skillFill = entry.target;
+                    const parent = skillFill.closest('.skill-item');
+                    const skillIndex = Array.from(document.querySelectorAll('.skill-item')).indexOf(parent);
+                    skillFill.style.width = skillValues[skillIndex] + '%';
+                    skillObserver.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.5 });
+
+        skillFills.forEach(fill => skillObserver.observe(fill));
+
+        // ===== Scroll Animations =====
+        const scrollObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.timeline-item, .project-card, .education-card, .contact-card').forEach(el => {
+            scrollObserver.observe(el);
+        });
+
+        // ===== Button Actions =====
+        document.querySelector('.btn-primary').addEventListener('click', () => {
+            alert('Resume download would be triggered here');
+        });
+
+        document.querySelector('.btn-secondary').addEventListener('click', () => {
+            document.querySelector('#contact').scrollIntoView({ behavior: 'smooth' });
+        });
+    </script>
+</body>
+</html>
